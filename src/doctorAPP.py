@@ -7,8 +7,8 @@ class DoctorApp:
     def __init__(self, root, core):
         self.core = core
         self.root = root
-        self.root.title("Doctor Interface")
 
+        self.root.title("Doctor Interface")
         self.root.geometry('800x450+300+200')  # Adjusted size to provide more space
 
         # Create title bar for dragging with larger height
@@ -23,74 +23,39 @@ class DoctorApp:
         # Frame for the buttons with border
         self.button_frame = tk.Frame(root, bd=2, relief="groove")
         self.button_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
-
-        # Set Baseline button
+        # Create buttons
         self.set_baseline_button = tk.Button(self.button_frame, text="Set Baseline", command=self.show_baseline_scale, width=button_width)
         self.set_baseline_button.pack(pady=5)
-
-        # Set Bolus button
         self.set_bolus_button = tk.Button(self.button_frame, text="Set Bolus", command=self.show_bolus_scale, width=button_width)
         self.set_bolus_button.pack(pady=5)
-
-        # Baseline On button
         self.baseline_on_button = tk.Button(self.button_frame, text="Baseline On", command=self.baseline_on, width=button_width)
         self.baseline_on_button.pack(pady=5)
-
-        # Baseline Off button
         self.baseline_off_button = tk.Button(self.button_frame, text="Baseline Off", command=self.baseline_off, width=button_width)
         self.baseline_off_button.pack(pady=5)
 
-        # Show Status button
-        self.status_button = tk.Button(self.button_frame, text="Show Status", command=self.show_status, width=button_width)
-        self.status_button.pack(pady=5)
-
-        # Separator
-        self.separator = ttk.Separator(root, orient='vertical')
-        self.separator.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
-
         # Frame for the right part of the interface
-        self.right_frame = tk.Frame(root, bd=2, relief="groove")
+        self.right_frame = tk.Frame(root, bd=2, relief="groove", width=500, height=400)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
-
+        self.right_frame.pack_propagate(0)
         # Frame for the dynamic part of the interface with border
-        self.dynamic_frame = tk.Frame(self.right_frame, bd=2, relief="groove")
-        self.dynamic_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=10, pady=10)
-
+        self.dynamic_frame = tk.Frame(self.right_frame, bd=2, relief="groove",width=500, height=200)
+        self.dynamic_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=False, padx=10, pady=10)
+        self.dynamic_frame.pack_propagate(0)
         # Create a subframe for the scale controls
-        self.scale_frame = tk.Frame(self.right_frame, bd=2, relief="groove")
-        self.scale_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=10, pady=10)
+        self.scale_frame = tk.Frame(self.right_frame, bd=2, relief="groove", width=500, height=200)
+        self.scale_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=False, padx=10, pady=10)
+        self.right_frame.pack_propagate(0)
+        
         self.display_realtime_info()
 
     def display_realtime_info(self):
-        # Clear the dynamic frame
-        for widget in self.dynamic_frame.winfo_children():
-            widget.destroy()
-        # Define the labels and their corresponding values
-        labels = {
-            "Baseline": self.core.get_baseline(),
-            "Bolus": self.core.get_bolus(),
-            "Hour Amount": self.core.get_hour_amount(),
-            "Daily Amount": self.core.get_daily_amount(),
-            "Baseline Status": self.core.get_baseline_status()
-        }
-
-        # Create and pack the labels
-        for text, value in labels.items():
-            label = tk.Label(self.dynamic_frame, text=f"{text}: {value}")
-            label.pack(pady=5)
-
-        # Update every second
-        self.root.after(1000, self.display_realtime_info)
-        self.core.update_by_minute()
-        
-    def display_realtime_info1(self):
         for widget in self.dynamic_frame.winfo_children():
             widget.destroy()
         status = self.core.status()
         # Create and pack the labels
         for key, value in status.items():
-            label = tk.Label(self.dynamic_frame, text=f"{key}: {value}")
-            label.pack(pady=5)
+            label = tk.Label(self.dynamic_frame, text=f"{key}: {value}", anchor='w')
+            label.pack(fill='x', padx=200, pady=5)
         # Update every second
         self.root.after(1000, self.display_realtime_info)
         self.core.update_by_minute()
@@ -142,11 +107,6 @@ class DoctorApp:
     def baseline_off(self):
         self.core.baseline_off()
         messagebox.showinfo("Info", "Baseline injection turned off.")
-
-    def show_status(self):
-        status = self.core.status()
-        status_message = "\n".join(f"{key}: {value}" for key, value in status.items())
-        messagebox.showinfo("Status", status_message)
 
     def make_window_draggable(self, widget):
         self.offset_x = 0
