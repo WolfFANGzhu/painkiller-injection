@@ -31,9 +31,11 @@ class Core:
     def validate(self,amount: float)->bool:
         # Check hour limit
         if(self.__hourAmount + amount > Core.MAX_HOUR_AMOUNT):
+            print("no injection, reach hour limit")
             return False
         # Check day limit
         if(self.__dailyAmount + amount > Core.MAX_DAILY_AMOUNT):
+            print("no injection, reach daily limit")
             return False
         return True
 
@@ -51,6 +53,9 @@ class Core:
                 self.__minuteRecord.append(self.__baseline)
                 self.__hourAmount += self.__baseline
                 self.__dailyAmount += self.__baseline
+            else:
+                self.__minuteRecord.append(0.0)
+                
         else: 
             self.__minuteRecord.append(0.0)
 

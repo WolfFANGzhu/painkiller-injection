@@ -10,7 +10,7 @@
   - Physician
     - patient management
       - create/select/delete patient account
-      - choose diffrent painkiller for one patient 
+      - choose different painkiller for one patient 
     - Injection management
       - set injection time/mode/dose
   - Patient
