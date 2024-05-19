@@ -41,3 +41,8 @@ class PatientApp:
 
         widget.bind('<Button-1>', on_mouse_down)
         widget.bind('<B1-Motion>', on_mouse_move)
+if __name__ == "__main__":
+    core = Core()
+    root = tk.Tk()
+    app = PatientApp(root, core)
+    root.mainloop()
