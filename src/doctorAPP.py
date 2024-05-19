@@ -8,15 +8,23 @@ class DoctorApp:
         self.root = root
         self.root.title("Doctor Interface")
 
+        # Create title bar for dragging
+        self.title_bar = tk.Frame(root, bg="lightgrey", relief="raised", bd=2)
+        self.title_bar.pack(fill=tk.X)
+        self.title_bar_label = tk.Label(self.title_bar, text="Doctor Interface", bg="lightgrey")
+        self.title_bar_label.pack(side=tk.LEFT, padx=10)
+
+        self.make_window_draggable(self.title_bar)
+
         self.baseline_label = tk.Label(root, text="Set Baseline (0.01-0.1 mL/min):")
         self.baseline_label.pack()
-        self.baseline_entry = tk.Entry(root)
-        self.baseline_entry.pack()
+        self.baseline_scale = tk.Scale(root, from_=0.01, to=0.1, resolution=0.01, orient=tk.HORIZONTAL)
+        self.baseline_scale.pack()
 
         self.bolus_label = tk.Label(root, text="Set Bolus (0.2-0.5 mL):")
         self.bolus_label.pack()
-        self.bolus_entry = tk.Entry(root)
-        self.bolus_entry.pack()
+        self.bolus_scale = tk.Scale(root, from_=0.2, to=0.5, resolution=0.01, orient=tk.HORIZONTAL)
+        self.bolus_scale.pack()
 
         self.set_baseline_button = tk.Button(root, text="Set Baseline", command=self.set_baseline)
         self.set_baseline_button.pack()
@@ -34,20 +42,14 @@ class DoctorApp:
         self.status_button.pack()
 
     def set_baseline(self):
-        try:
-            baseline = float(self.baseline_entry.get())
-            message = self.core.set_baseline(baseline)
-            messagebox.showinfo("Info", message)
-        except ValueError:
-            messagebox.showerror("Error", "Invalid input. Please provide a number between 0.01 and 0.1.")
+        baseline = self.baseline_scale.get()
+        message = self.core.set_baseline(baseline)
+        messagebox.showinfo("Info", message)
 
     def set_bolus(self):
-        try:
-            bolus = float(self.bolus_entry.get())
-            message = self.core.set_bolus(bolus)
-            messagebox.showinfo("Info", message)
-        except ValueError:
-            messagebox.showerror("Error", "Invalid input. Please provide a number between 0.2 and 0.5.")
+        bolus = self.bolus_scale.get()
+        message = self.core.set_bolus(bolus)
+        messagebox.showinfo("Info", message)
 
     def baseline_on(self):
         self.core.baseline_on()
@@ -61,3 +63,19 @@ class DoctorApp:
         status = self.core.status()
         status_message = "\n".join(f"{key}: {value}" for key, value in status.items())
         messagebox.showinfo("Status", status_message)
+
+    def make_window_draggable(self, widget):
+        self.offset_x = 0
+        self.offset_y = 0
+        self.root.geometry('+600+300')
+        def on_mouse_down(event):
+            self.offset_x = event.x
+            self.offset_y = event.y
+
+        def on_mouse_move(event):
+            x = self.root.winfo_x() + event.x - self.offset_x
+            y = self.root.winfo_y() + event.y - self.offset_y
+            self.root.geometry(f'+{x}+{y}')
+
+        widget.bind('<Button-1>', on_mouse_down)
+        widget.bind('<B1-Motion>', on_mouse_move)

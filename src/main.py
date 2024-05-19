@@ -7,6 +7,7 @@ def main():
     core = Core()
     
     doctor_root = tk.Tk()
+    
     doctor_app = DoctorApp(doctor_root, core)
     
     patient_root = tk.Tk()
