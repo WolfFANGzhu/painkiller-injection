@@ -39,9 +39,11 @@ class Core:
     def validate(self, amount: Decimal) -> bool:
         # Check hour limit
         if (self.__hourAmount + amount > Core.MAX_HOUR_AMOUNT):
+            #print("No injection, reach hour limit")
             return False
         # Check day limit    
         if (self.__dailyAmount + amount > Core.MAX_DAILY_AMOUNT):
+            #print("No injection, reach daily limit")
             return False
         return True
 
