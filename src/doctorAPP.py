@@ -9,7 +9,7 @@ class DoctorApp:
         self.root = root
 
         self.root.title("Doctor Interface")
-        self.root.geometry('800x450+300+200')  # Adjusted size to provide more space
+        self.root.geometry('800x500+300+200')  # Adjusted size to provide more space
 
         # Create title bar for dragging with larger height
         self.title_bar = tk.Frame(root, bg="lightgrey", relief="raised", bd=2, height=40)
@@ -32,13 +32,15 @@ class DoctorApp:
         self.baseline_on_button.pack(pady=5)
         self.baseline_off_button = tk.Button(self.button_frame, text="Baseline Off", command=self.baseline_off, width=button_width)
         self.baseline_off_button.pack(pady=5)
+        self.reset_button = tk.Button(self.button_frame, text="Reset", command=self.clear_dynamic_frame, width=button_width)
+        self.reset_button.pack(pady=5)
 
         # Frame for the right part of the interface
-        self.right_frame = tk.Frame(root, bd=2, relief="groove", width=500, height=400)
+        self.right_frame = tk.Frame(root, bd=2, relief="groove", width=500, height=450)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.right_frame.pack_propagate(0)
         # Frame for the dynamic part of the interface with border
-        self.dynamic_frame = tk.Frame(self.right_frame, bd=2, relief="groove",width=500, height=200)
+        self.dynamic_frame = tk.Frame(self.right_frame, bd=2, relief="groove",width=500, height=250)
         self.dynamic_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=False, padx=10, pady=10)
         self.dynamic_frame.pack_propagate(0)
         # Create a subframe for the scale controls
@@ -57,7 +59,7 @@ class DoctorApp:
             label = tk.Label(self.dynamic_frame, text=f"{key}: {value}", anchor='w')
             label.pack(fill='x', padx=200, pady=5)
         # Update every second
-        self.root.after(1000, self.display_realtime_info)
+        self.root.after(200, self.display_realtime_info)
         self.core.update_by_minute()
 
     def show_baseline_scale(self):
@@ -107,6 +109,12 @@ class DoctorApp:
     def baseline_off(self):
         self.core.baseline_off()
         messagebox.showinfo("Info", "Baseline injection turned off.")
+
+    def reset(self):
+        self.core.reset()
+        self.clear_dynamic_frame()
+        self.clear_scale_frame()
+        messagebox.showinfo("Info", "System reset.")
 
     def make_window_draggable(self, widget):
         self.offset_x = 0

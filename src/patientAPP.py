@@ -21,10 +21,8 @@ class PatientApp:
         self.request_bolus_button.pack(pady=5)
 
     def request_bolus(self):
-        if self.core.request_bolus():
-            messagebox.showinfo("Info", "Bolus injection successful.")
-        else:
-            messagebox.showerror("Error", "Bolus injection failed. Check hour and daily limits.")
+        self.core.request_bolus()
+
 
     def make_window_draggable(self, widget):
         self.offset_x = 0
