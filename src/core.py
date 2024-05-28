@@ -1,5 +1,5 @@
 from decimal import Decimal, getcontext
-
+import matplotlib.pyplot as plt
 # Set the precision to 2 decimal places
 getcontext().prec = 2  
 
@@ -16,20 +16,23 @@ class Core:
         self.__baselineStatus = 'off'  # Baseline Status: off, on, pause
         self.__minuteRecord = []  # Record the amount injected every minute (Size 60 * 24)
         self.__time = 0
+        self.__hourlyRecord = []  # Record the amount injected every hour 
+        self.__dailyRecord = []  # Record the amount injected every day 
+        self.__timeRecord = []  # Record the time in minutes
 
     def set_baseline(self, baseline: float) -> str:
         baseline = Decimal(str(baseline))
         if baseline < Decimal('0.01') or baseline > Decimal('0.1'):
-            return "Baseline injection rate must be between 0.01 and 0.1"
+            return "Baseline injection rate must be between 0.01 and 0.1 ml"
         self.__baseline = baseline
-        return "Success Set Baseline to " + str(baseline)
+        return "Success set baseline to " + str(baseline) + " ml"
 
     def set_bolus(self, bolus: float) -> str:
         bolus = Decimal(str(bolus))
         if bolus < Decimal('0.2') or bolus > Decimal('0.5'):
-            return "Bolus injection amount must be between 0.2 and 0.5"
+            return "Bolus injection amount must be between 0.2 and 0.5 ml"
         self.__bolus = bolus
-        return "Success Set Bolus to " + str(bolus)
+        return "Success set bolus to " + str(bolus) + " ml"
     
     def baseline_on(self):
         self.__baselineStatus = 'on'
@@ -67,9 +70,13 @@ class Core:
             self.__minuteRecord.append(Decimal('0.0'))
 
         # Calculate the hourly and daily amounts
+        self.__time += 1
         self.__hourAmount = sum(self.__minuteRecord[-60:])
         self.__dailyAmount = sum(self.__minuteRecord)
-        self.__time += 1
+        self.__hourlyRecord.append(self.__hourAmount)
+        self.__dailyRecord.append(self.__dailyAmount)
+        self.__timeRecord.append(self.__time)
+        
 
     def request_bolus(self) -> bool:
         if self.validate(self.__bolus):
@@ -80,6 +87,8 @@ class Core:
             # Recalculate hour and daily amounts after bolus request
             self.__hourAmount = sum(self.__minuteRecord[-60:])
             self.__dailyAmount = sum(self.__minuteRecord)
+            self.__hourlyRecord[-1] = self.__hourAmount
+            self.__dailyRecord[-1] = self.__dailyAmount
             return True
         return False
 
@@ -101,3 +110,30 @@ class Core:
             'Daily Amount': self.__dailyAmount,
             'Baseline Status': self.__baselineStatus,
         }
+    
+    def generate_hourly_graph(self):
+        plt.close('all')
+        hourly_data = self.__hourlyRecord[-60:]  # Last 60 minutes hourly data
+        time_data = self.__timeRecord[-60:]  # Last 60 minutes time data
+        fig, ax = plt.subplots()
+
+        ax.plot(time_data, hourly_data, label='Hourly Amount')
+        ax.set_title('Hourly Amount Over Time')
+        ax.set_ylabel('mL')
+        ax.set_xlabel('Time (minutes)')
+        ax.legend()
+  
+        return fig
+    
+    def generate_daily_graph(self):
+        plt.close('all')
+        daily_data = self.__dailyRecord[-60:]  # Last 60 minutes daily data
+        time_data = self.__timeRecord[-60:]
+        fig, ax = plt.subplots()
+        ax.plot(time_data, daily_data, label='Daily Amount')
+        ax.set_title('Daily Amount Over Time')
+        ax.set_ylabel('mL')
+        ax.set_xlabel('Time (minutes)')
+        ax.legend()
+        plt.close(fig) 
+        return fig
