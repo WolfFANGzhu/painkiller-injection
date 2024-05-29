@@ -23,16 +23,16 @@ class Core:
     def set_baseline(self, baseline: float) -> str:
         baseline = Decimal(str(baseline))
         if baseline < Decimal('0.01') or baseline > Decimal('0.1'):
-            return "Baseline injection rate must be between 0.01 and 0.1 ml"
+            return "Baseline injection rate must be between 0.01 and 0.1 ml."
         self.__baseline = baseline
-        return "Success set baseline to " + str(baseline) + " ml"
+        return "Success set baseline to " + str(baseline) + " ml."
 
     def set_bolus(self, bolus: float) -> str:
         bolus = Decimal(str(bolus))
         if bolus < Decimal('0.2') or bolus > Decimal('0.5'):
-            return "Bolus injection amount must be between 0.2 and 0.5 ml"
+            return "Bolus injection amount must be between 0.2 and 0.5 ml."
         self.__bolus = bolus
-        return "Success set bolus to " + str(bolus) + " ml"
+        return "Success set bolus to " + str(bolus) + " ml."
     
     def baseline_on(self):
         self.__baselineStatus = 'on'
