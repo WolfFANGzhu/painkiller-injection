@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from core import Core
+from .core import Core
 
 class PatientApp:
     def __init__(self, root, core):

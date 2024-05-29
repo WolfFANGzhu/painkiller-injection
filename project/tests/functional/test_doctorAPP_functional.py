@@ -1,15 +1,10 @@
-import sys
-import os
 import time
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
 import unittest
 from unittest.mock import patch
 import tkinter as tk
 from decimal import Decimal
-from core import Core
-from doctorAPP import DoctorApp
-from patientAPP import PatientApp
+from project.src.core import Core
+from project.src.doctorAPP import DoctorApp
 
 class TestDoctorApp(unittest.TestCase):
     @classmethod
@@ -55,14 +50,14 @@ class TestDoctorApp(unittest.TestCase):
         """Test setting bolus value"""
         time.sleep(1) 
         self.app.show_bolus_scale()
-        self.app.bolus_scale.set(0.1)
+        self.app.bolus_scale.set(0.5)
         self.app.set_bolus()
         
 
         # Check if the bolus was set correctly
-        self.assertEqual(self.core.status()['Bolus Amount'], Decimal('0.2'))
+        self.assertEqual(self.core.status()['Bolus Amount'], Decimal('0.5'))
         # Check if the message method was called with the correct message
-        mock_show_message.assert_called_with("Success set bolus to 0.2 ml.")
+        mock_show_message.assert_called_with("Success set bolus to 0.5 ml.")
         time.sleep(1) 
 
     @patch.object(DoctorApp, 'show_message')

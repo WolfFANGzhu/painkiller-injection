@@ -59,13 +59,7 @@ class Core:
                 self.__minuteRecord.append(self.__baseline)
             else:
                 self.__minuteRecord.append(Decimal('0.0'))
-                self.__baselineStatus = 'pause'
-        elif self.__baselineStatus == 'pause':
-            if self.validate(self.__baseline):
-                self.__minuteRecord.append(self.__baseline)
-                self.__baselineStatus = 'on'  # Set status back to 'on' if validation succeeds
-            else:
-                self.__minuteRecord.append(Decimal('0.0'))
+
         else:
             self.__minuteRecord.append(Decimal('0.0'))
 
