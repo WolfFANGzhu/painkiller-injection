@@ -12,7 +12,7 @@ class DoctorApp:
         self.root = root
 
         self.root.title("Doctor Interface")
-        self.root.geometry('1400x1000+0+0')  # Adjusted size to provide more space
+        self.root.geometry('1400x950+0+0')  # Adjusted size to provide more space
 
         # Create title bar for dragging with larger height
         self.title_bar = tk.Frame(root, bg="lightgrey", relief="raised", bd=2, height=40)
@@ -22,7 +22,7 @@ class DoctorApp:
         self.make_window_draggable(self.title_bar)
 
         button_width = 25  # Set a uniform button width
-        self.simulate_speed = 200  # Default simulation speed
+        self.simulate_speed = 1000  # Default simulation speed
 
         # Frame for the buttons with border
         self.button_frame = tk.Frame(root, bd=2, relief="groove", width=200, height=700)
@@ -57,6 +57,8 @@ class DoctorApp:
         self.stop_graph_button = tk.Button(self.doctor_button_frame, text="Stop Graph", command=self.stop_graph, width=button_width)
         self.stop_graph_button.pack(pady=5)
 
+        self.start_button = tk.Button(self.system_button_frame, text="Start", command=self.start_simulate, width=button_width)
+        self.start_button.pack(pady=5)
         self.set_simulate_speed_button = tk.Button(self.system_button_frame, text="Set Simulate Speed", command=self.show_simulate_speed_scale, width=button_width)
         self.set_simulate_speed_button.pack(pady=5)
         self.pause_button = tk.Button(self.system_button_frame, text="Pause", command=self.pause, width=button_width)
@@ -65,7 +67,7 @@ class DoctorApp:
         self.reset_button.pack(pady=5)
 
         # Frame for the right part of the interface
-        self.right_frame = tk.Frame(root, bd=2, relief="groove", width=1200, height=1000)
+        self.right_frame = tk.Frame(root, bd=2, relief="groove", width=1200, height=950)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.right_frame.pack_propagate(0)
 
@@ -85,15 +87,17 @@ class DoctorApp:
         self.scale_frame.pack_propagate(0)
 
         # Create a subframe for the graph controls
-        self.graph_frame = tk.Frame(self.right_frame, bd=2, relief="groove", width=1200, height=700)
+        self.graph_frame = tk.Frame(self.right_frame, bd=2, relief="groove", width=1200, height=650)
         self.graph_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False, padx=10, pady=10)
         self.graph_frame.pack_propagate(0)
 
-        self.showing_graph = False
+        self.showing_graph = 'off'  # Graph is not being shown
         self.paused = False
+        self.start = False
         self.canvas = None
         self.ax1 = None
         self.ax2 = None
+        self.stop_graph_button.config(state=tk.DISABLED)
         self.display_realtime_info()
 
     def display_realtime_info(self):
@@ -117,10 +121,19 @@ class DoctorApp:
             unit = units.get(key, '')
             label = tk.Label(self.dynamic_frame, text=f"{key}: {value} {unit}", anchor='w', width=50)
             label.pack(fill='x', padx=5, pady=5)
-        # Update every second
-        if not self.paused:
+
+        if self.start:
             self.root.after(self.simulate_speed, self.display_realtime_info)
             self.core.update_by_minute()
+
+    def start_simulate(self):
+        # Update every second
+        self.start = True
+        self.display_realtime_info()
+        if self.showing_graph == 'on':
+            self.update_graphs()
+        self.start_button.config(state=tk.DISABLED)
+        self.show_message("Simulation started.")
 
     def update_graph(self, fig, frame):
         if self.canvas is None:
@@ -134,27 +147,38 @@ class DoctorApp:
             self.canvas.draw()
 
     def show_graph(self):
-        self.showing_graph = True
+        self.showing_graph = 'on'
+        self.stop_graph_button.config(state=tk.NORMAL)
+        self.graph_button.config(state=tk.DISABLED)
         self.update_graphs()
 
+
     def update_graphs(self):
-        if self.showing_graph:
+        if self.showing_graph=='on':
             fig = self.core.figure
             self.update_graph(fig, self.graph_frame)
-            self.root.after(self.simulate_speed, self.update_graphs)  # Update graph every second
+            if self.start:
+                self.root.after(self.simulate_speed, self.update_graphs)  # Update graph every second
 
     def stop_graph(self):
-        self.showing_graph = False
+        self.showing_graph = 'off'
+        self.graph_button.config(state=tk.NORMAL)
+        self.stop_graph_button.config(state=tk.DISABLED)
         if hasattr(self, 'canvas'):
+            self.canvas.figure.clf()
+            self.core.figure.clf()
+            self.core.figure = plt.Figure(figsize=(10, 5))
+
             self.canvas.get_tk_widget().destroy()
-            del self.canvas
-
-
+            self.canvas = None  
+            self.ax1 = None
+            self.ax2 = None
+        self.show_message("Graph stopped.")
 
     def show_baseline_scale(self):
         self.clear_scale_frame()
         baseline_label = tk.Label(self.scale_frame, text="Set Baseline (0.01-0.1 mL/min):")
-        baseline_label.pack(pady=5, anchor=tk.CENTER)
+        baseline_label.pack(pady=20, anchor=tk.CENTER)
         self.baseline_scale = tk.Scale(self.scale_frame, from_=0.01, to=0.1, resolution=0.01, orient=tk.HORIZONTAL, length=300)
         self.baseline_scale.pack(pady=5, anchor=tk.CENTER)
 
@@ -164,18 +188,19 @@ class DoctorApp:
     def show_bolus_scale(self):
         self.clear_scale_frame()
         bolus_label = tk.Label(self.scale_frame, text="Set Bolus (0.2-0.5 mL):")
-        bolus_label.pack(pady=5, anchor=tk.CENTER)
+        bolus_label.pack(pady=20, anchor=tk.CENTER)
         self.bolus_scale = tk.Scale(self.scale_frame, from_=0.2, to=0.5, resolution=0.01, orient=tk.HORIZONTAL, length=300)
         self.bolus_scale.pack(pady=5, anchor=tk.CENTER)
 
         set_button = tk.Button(self.scale_frame, text="Set Bolus", command=self.set_bolus)
+
         set_button.pack(pady=5, anchor=tk.CENTER)
 
     def show_simulate_speed_scale(self):
         self.clear_scale_frame()
-        speed_label = tk.Label(self.scale_frame, text="Set the simulation speed (1x to 10x):")
-        speed_label.pack(pady=5, anchor=tk.CENTER)
-        self.speed_scale = tk.Scale(self.scale_frame, from_=1, to=10, resolution=1, orient=tk.HORIZONTAL, length=300)
+        speed_label = tk.Label(self.scale_frame, text="Set the simulation speed (1x to 5x):")
+        speed_label.pack(pady=20, anchor=tk.CENTER)
+        self.speed_scale = tk.Scale(self.scale_frame, from_=1, to=5, resolution=1, orient=tk.HORIZONTAL, length=300)
         self.speed_scale.pack(pady=5, anchor=tk.CENTER)
 
         set_button = tk.Button(self.scale_frame, text="Set Speed", command=self.set_simulate_speed)
@@ -184,22 +209,36 @@ class DoctorApp:
     def set_baseline(self):
         baseline = self.baseline_scale.get()
         message = self.core.set_baseline(baseline)
+        if not self.start:
+            self.display_realtime_info()
         self.show_message(message)
 
     def set_bolus(self):
         bolus = self.bolus_scale.get()
         message = self.core.set_bolus(bolus)
+        if not self.start:
+            self.display_realtime_info()
         self.show_message(message)
 
     def baseline_on(self):
         self.core.baseline_on()
+        if not self.start:
+            self.display_realtime_info()
         self.show_message("Baseline injection turned on.")
 
     def baseline_off(self):
         self.core.baseline_off()
+        if not self.start:
+            self.display_realtime_info()
         self.show_message("Baseline injection turned off.")
 
     def reset(self):
+        self.start = False
+        self.start_button.config(state=tk.NORMAL)
+        if self.showing_graph == 'on':
+            self.stop_graph()
+        self.showing_graph = 'off'
+        self.stop_graph_button.config(state=tk.DISABLED)
         self.core.reset()
         self.clear_dynamic_frame()
         self.clear_scale_frame()
@@ -209,7 +248,8 @@ class DoctorApp:
         self.paused = True
         self.disable_buttons()
         self.clear_scale_frame()
-        self.showing_graph = False  # Stop updating the graph when paused
+        if self.showing_graph == 'on':
+            self.showing_graph = 'pause'  # Stop updating the graph when paused
 
         pause_label = tk.Label(self.scale_frame, text="Simulation is paused. Press the \"Resume\" button to restart the system.", wraplength=400, justify=tk.LEFT)
         pause_label.place(relx=0.5, rely=0.15, anchor=tk.CENTER)
@@ -222,9 +262,15 @@ class DoctorApp:
         self.enable_buttons()
         self.show_message("Simulation resumed.")
         self.display_realtime_info()
-        if hasattr(self, 'canvas'):  # If a graph was being shown, start updating it again
-            self.showing_graph = True
+        if self.showing_graph == 'pause':
+            self.showing_graph = 'on'  # Resume updating the graph
+            self.graph_button.config(state=tk.DISABLED)
             self.update_graphs()
+        elif self.showing_graph == 'off':
+            
+            self.stop_graph_button.config(state=tk.DISABLED)
+        if self.start:
+            self.start_button.config(state=tk.DISABLED)
 
     def set_simulate_speed(self):
         multiplier = self.speed_scale.get()
@@ -238,9 +284,11 @@ class DoctorApp:
         self.baseline_off_button.config(state=tk.DISABLED)
         self.graph_button.config(state=tk.DISABLED)
         self.stop_graph_button.config(state=tk.DISABLED)
+        self.start_button.config(state=tk.DISABLED)
+        self.set_simulate_speed_button.config(state=tk.DISABLED)
         self.reset_button.config(state=tk.DISABLED)
         self.pause_button.config(state=tk.DISABLED)
-        self.set_simulate_speed_button.config(state=tk.DISABLED)
+        
 
     def enable_buttons(self):
         self.set_baseline_button.config(state=tk.NORMAL)
@@ -249,9 +297,11 @@ class DoctorApp:
         self.baseline_off_button.config(state=tk.NORMAL)
         self.graph_button.config(state=tk.NORMAL)
         self.stop_graph_button.config(state=tk.NORMAL)
+        self.start_button.config(state=tk.NORMAL)
+        self.set_simulate_speed_button.config(state=tk.NORMAL)
         self.reset_button.config(state=tk.NORMAL)
         self.pause_button.config(state=tk.NORMAL)
-        self.set_simulate_speed_button.config(state=tk.NORMAL)
+        
 
     def clear_dynamic_frame(self):
         for widget in self.dynamic_frame.winfo_children():

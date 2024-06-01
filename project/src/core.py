@@ -122,6 +122,7 @@ class Core:
             'Baseline Status': self.__baselineStatus,
         }
     def initialize_axes(self, fig):
+
         ax1 = fig.add_subplot(111)
         ax2 = ax1.twinx()
         self.line1, = ax1.plot([], [], color='tab:blue', label='Hourly Amount')
@@ -150,13 +151,22 @@ class Core:
         self.line1.set_data(time_data, hourly_data)
         self.line2.set_data(time_data, daily_data)
 
-        ax1.set_xlim([0, 1440])
-        ax2.set_xlim([0, 1440])
+        if len(time_data) < 1440:
+            x_ticks = np.arange(0, 1441, 60)
+            x_lim = [0, 1440]
+        else:
+            max_time = max(time_data)
+            extra_ticks = max_time - 1440
+            x_ticks = np.arange(extra_ticks, max_time, 60)
+            x_lim = [extra_ticks, max_time]
+
+        ax1.set_xticks(x_ticks)
+        ax2.set_xticks(x_ticks)
+        ax1.set_xlim(x_lim)
+        ax2.set_xlim(x_lim)
+
         ax1.set_ylim([0, 3.5])
         ax2.set_ylim([0, 3.5])
-
-        ax1.set_xticks(np.arange(0, 1441, 60))
-        ax2.set_xticks(np.arange(0, 1441, 60))
         ax1.set_yticks(np.arange(0, 3.1, 0.1))
         ax2.set_yticks(np.arange(0, 3.1, 0.1))
 
