@@ -4,8 +4,8 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import math
 
-# Set the precision to 2 decimal places
-getcontext().prec = 2  
+# Set the precision to 3 decimal places
+getcontext().prec = 3  
 
 class Core:
     # Static variable declaration
@@ -63,7 +63,7 @@ class Core:
         
         if self.__baselineStatus == 'on':
             if self.validate(self.__baseline):
-                self.__minuteRecord.append(self.__baseline)
+                self.__minuteRecord.append(Decimal(str(self.__baseline)))
 
             else:
                 self.__minuteRecord.append(Decimal('0.0'))
@@ -77,8 +77,9 @@ class Core:
             self.__timeRecord.pop(0)
         # Calculate the hourly and daily amounts
         self.__time += 1
-        self.__hourAmount = math.fsum(self.__minuteRecord[-60:])
-        self.__dailyAmount =math.fsum(self.__minuteRecord)
+        self.__hourAmount = sum(self.__minuteRecord[-60:])
+        self.__dailyAmount = sum(self.__minuteRecord)
+
 
         self.__hourlyRecord.append(self.__hourAmount)
         self.__dailyRecord.append(self.__dailyAmount)
@@ -92,8 +93,8 @@ class Core:
             else:
                 self.__minuteRecord[-1] += self.__bolus
             # Recalculate hour and daily amounts after bolus request
-            self.__hourAmount = math.fsum(self.__minuteRecord[-60:])
-            self.__dailyAmount =math.fsum(self.__minuteRecord)
+            self.__hourAmount = sum(self.__minuteRecord[-60:])
+            self.__dailyAmount = sum(self.__minuteRecord)
             self.__hourlyRecord[-1] = self.__hourAmount
             self.__dailyRecord[-1] = self.__dailyAmount
             return True
