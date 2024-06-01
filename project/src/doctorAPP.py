@@ -5,13 +5,14 @@ from .core import Core
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+
 class DoctorApp:
     def __init__(self, root, core):
         self.core = core
         self.root = root
 
         self.root.title("Doctor Interface")
-        self.root.geometry('800x560+300+200')  # Adjusted size to provide more space
+        self.root.geometry('1000x700+300+200')  # Adjusted size to provide more space
 
         # Create title bar for dragging with larger height
         self.title_bar = tk.Frame(root, bg="lightgrey", relief="raised", bd=2, height=40)
@@ -21,7 +22,7 @@ class DoctorApp:
         self.make_window_draggable(self.title_bar)
 
         button_width = 25  # Set a uniform button width
-        self.simulate_speed = 200
+        self.simulate_speed = 200  # Default simulation speed
 
         # Frame for the buttons with border
         self.button_frame = tk.Frame(root, bd=2, relief="groove", width=200, height=500)
@@ -51,11 +52,8 @@ class DoctorApp:
         self.baseline_on_button.pack(pady=5)
         self.baseline_off_button = tk.Button(self.doctor_button_frame, text="Baseline Off", command=self.baseline_off, width=button_width)
         self.baseline_off_button.pack(pady=5)
-        self.hourly_graph_button = tk.Button(self.doctor_button_frame, text="Hourly Graph", command=self.show_hourly_graph, width=button_width)
-        self.hourly_graph_button.pack(pady=5)
-        self.daily_graph_button = tk.Button(self.doctor_button_frame, text="Daily Graph", command=self.show_daily_graph, width=button_width)
-        self.daily_graph_button.pack(pady=5)
-
+        self.graph_button = tk.Button(self.doctor_button_frame, text="Graph", command=self.show_graph, width=button_width)
+        self.graph_button.pack(pady=5)
         
         self.set_simulate_speed_button = tk.Button(self.system_button_frame, text="Set Simulate Speed", command=self.show_simulate_speed_scale, width=button_width)
         self.set_simulate_speed_button.pack(pady=5)
@@ -65,25 +63,36 @@ class DoctorApp:
         self.reset_button.pack(pady=5)
 
         # Frame for the right part of the interface
-        self.right_frame = tk.Frame(root, bd=2, relief="groove", width=500, height=500)
+        self.right_frame = tk.Frame(root, bd=2, relief="groove", width=700, height=900)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.right_frame.pack_propagate(0)
+
+        # Frame for text and graph controls
+        self.text_frame = tk.Frame(self.right_frame, bd=2, relief="groove", width=700, height=250)
+        self.text_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=False, padx=10, pady=10)
+        self.text_frame.pack_propagate(0)
+
         # Frame for the dynamic part of the interface with border
-        self.dynamic_frame = tk.Frame(self.right_frame, bd=2, relief="groove", width=500, height=250)
-        self.dynamic_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=False, padx=10, pady=10)
+        self.dynamic_frame = tk.Frame(self.text_frame, bd=2, relief="groove", width=250, height=250)
+        self.dynamic_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.dynamic_frame.pack_propagate(0)
 
         # Create a subframe for the scale controls
-        self.scale_frame = tk.Frame(self.right_frame, bd=2, relief="groove", width=500, height=200)
-        self.scale_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=False, padx=10, pady=10)
+        self.scale_frame = tk.Frame(self.text_frame, bd=2, relief="groove", width=450, height=250)
+        self.scale_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False, padx=10, pady=10)
         self.scale_frame.pack_propagate(0)
+
+        # Create a subframe for the graph controls
+        self.graph_frame = tk.Frame(self.right_frame, bd=2, relief="groove", width=700, height=450)
+        self.graph_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False, padx=10, pady=10)
+        self.graph_frame.pack_propagate(0)
 
         self.showing_graph = False
         self.paused = False
         self.display_realtime_info()
 
     def display_realtime_info(self):
-        if not self.showing_graph and not self.paused:
+        if not self.paused:
             self.display_status()
 
     def display_status(self):
@@ -102,39 +111,41 @@ class DoctorApp:
         for key, value in status.items():
             unit = units.get(key, '')
             label = tk.Label(self.dynamic_frame, text=f"{key}: {value} {unit}", anchor='w', width=50)
-            label.pack(fill='x', padx=150, pady=5)
+            label.pack(fill='x', padx=5, pady=5)
         # Update every second
         if not self.paused:
             self.root.after(self.simulate_speed, self.display_realtime_info)
             self.core.update_by_minute()
 
-    def update_graph(self, fig):
-        for widget in self.dynamic_frame.winfo_children():
-            widget.destroy()
+    def update_graph(self, fig, frame):
 
-        canvas = FigureCanvasTkAgg(fig, master=self.dynamic_frame)
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        canvas.draw()
+        if not hasattr(self, 'canvas'):
+            self.canvas = FigureCanvasTkAgg(fig, master=frame)
+            self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=False)
+            self.canvas.figure.clear()  # Clear the old figure
 
-    def show_hourly_graph(self):
+
+        self.canvas.figure = fig
+        self.canvas.draw()
+        self.canvas.get_tk_widget().config(width=700, height=450)  # Set the size of the widget
+
+
+
+        
+        
+
+    def show_graph(self):
         self.showing_graph = True
-        self.update_hourly_graph()
+        self.update_graphs()
 
-    def show_daily_graph(self):
-        self.showing_graph = True
-        self.update_daily_graph()
-
-    def update_hourly_graph(self):
+    def update_graphs(self):
         if self.showing_graph:
-            fig = self.core.generate_hourly_graph()
-            self.update_graph(fig)
-            self.root.after(self.simulate_speed, self.update_hourly_graph)  # Update graph every second
+            fig = self.core.generate_combined_graph()
+            self.update_graph(fig, self.graph_frame)
+            self.root.after(self.simulate_speed, self.update_graphs)  # Update graph every second
 
-    def update_daily_graph(self):
-        if self.showing_graph:
-            fig = self.core.generate_daily_graph()
-            self.update_graph(fig)
-            self.root.after(self.simulate_speed, self.update_daily_graph)  # Update graph every second
+
+
 
     def show_baseline_scale(self):
         self.clear_scale_frame()
@@ -158,9 +169,9 @@ class DoctorApp:
 
     def show_simulate_speed_scale(self):
         self.clear_scale_frame()
-        speed_label = tk.Label(self.scale_frame, text="Set the simulation speed to represent 1 minute (range: 0.2 ~ 1 s).")
+        speed_label = tk.Label(self.scale_frame, text="Set the simulation speed multiplier (range: 1x ~ 10x).")
         speed_label.pack(pady=5, anchor=tk.CENTER)
-        self.speed_scale = tk.Scale(self.scale_frame, from_=0.2, to=1, resolution=0.1, orient=tk.HORIZONTAL, length=300)
+        self.speed_scale = tk.Scale(self.scale_frame, from_=1, to=10, resolution=1, orient=tk.HORIZONTAL, length=300)
         self.speed_scale.pack(pady=5, anchor=tk.CENTER)
 
         set_button = tk.Button(self.scale_frame, text="Set Speed", command=self.set_simulate_speed)
@@ -209,7 +220,7 @@ class DoctorApp:
         self.display_realtime_info()
 
     def set_simulate_speed(self):
-        self.simulate_speed = int(self.speed_scale.get()*1000)
+        self.simulate_speed = int(1000/self.speed_scale.get())
         self.show_message(f"Simulation speed set to {self.simulate_speed} ms.")
 
     def disable_buttons(self):
@@ -217,8 +228,7 @@ class DoctorApp:
         self.set_bolus_button.config(state=tk.DISABLED)
         self.baseline_on_button.config(state=tk.DISABLED)
         self.baseline_off_button.config(state=tk.DISABLED)
-        self.hourly_graph_button.config(state=tk.DISABLED)
-        self.daily_graph_button.config(state=tk.DISABLED)
+        self.graph_button.config(state=tk.DISABLED)
         self.reset_button.config(state=tk.DISABLED)
         self.pause_button.config(state=tk.DISABLED)
         self.set_simulate_speed_button.config(state=tk.DISABLED)
@@ -228,8 +238,7 @@ class DoctorApp:
         self.set_bolus_button.config(state=tk.NORMAL)
         self.baseline_on_button.config(state=tk.NORMAL)
         self.baseline_off_button.config(state=tk.NORMAL)
-        self.hourly_graph_button.config(state=tk.NORMAL)
-        self.daily_graph_button.config(state=tk.NORMAL)
+        self.graph_button.config(state=tk.NORMAL)
         self.reset_button.config(state=tk.NORMAL)
         self.pause_button.config(state=tk.NORMAL)
         self.set_simulate_speed_button.config(state=tk.NORMAL)
