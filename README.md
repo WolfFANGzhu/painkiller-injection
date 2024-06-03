@@ -12,37 +12,51 @@ The software also includes safety features to prevent overdosing, such as maximu
 
 The project is implemented in Python and uses the tkinter library for the user interface. It also includes a suite of unit tests to ensure the software functions as expected.
 
-
 ## Usage
 
 ### Running the Main Program
 
 To run the main program, execute the following command:
-    python -m main
+
+```bash
+python -m main
+```
 
 ### Running Unit Tests
 
 To run unit tests, use the following command:
-    e.g for the `core` module
-    python -m unittest project.tests.unit.test_core
+
+```bash
+# e.g for the `core` module
+python -m unittest project.tests.unit.test_core
+```
 
 To run all unit tests, execute:
-    python -m unittest discover -s project/tests/unit
+
+```bash
+python -m unittest discover -s project/tests/unit
+```
 
 ### Running Functional Tests
 
 To run functional tests, execute:
-    e.g for the `doctorAPP` module
-    python -m unittest project.tests.functional.test_doctorAPP_functional
+
+```bash
+# e.g for the `doctorAPP` module
+python -m unittest project.tests.functional.test_doctorAPP_functional
+```
 
 To run all unit tests, execute:
-    python -m unittest discover -s project/tests/functional
+
+```bash
+python -m unittest discover -s project/tests/functional
+```
 
 ### Running Specific Modules
 
 To run a specific module, such as `doctorAPP`, use the following command:
-    python -m project.src.doctorAPP
 
-
-
+```bash
+python -m project.src.doctorAPP
+```
 
