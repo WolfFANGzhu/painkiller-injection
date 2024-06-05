@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from src.core import Core
 from src.doctorAPP import DoctorApp
 
-class TestDoctorApp(unittest.TestCase):
+class TestDoctorApp_function(unittest.TestCase):
     # every test start, run setUp
     def setUp(self):
         self.root = tk.Tk()
@@ -91,7 +91,8 @@ class TestDoctorApp(unittest.TestCase):
         mock_show_message.assert_called_with("Simulation resumed.")
 
     @patch.object(DoctorApp, 'show_message')
-    def test_pause_resume_on(self, mock_show_message):  # pause + resume on
+    def test_pause_resume_on(self, mock_show_message):  # pause + resume on + start
+        self.app.start_simulate()
         self.app.show_graph()
         self.assertEqual(self.app.showing_graph, 'on')
         self.app.pause()        
@@ -103,6 +104,7 @@ class TestDoctorApp(unittest.TestCase):
         self.assertEqual(self.app.showing_graph, 'on')
         self.assertTrue(self.app.graph_button['state'] == tk.DISABLED)
         mock_show_message.assert_called_with("Simulation resumed.")
+        self.assertTrue(self.app.start_button['state'] == tk.DISABLED)  
 
     def test_show_graph(self):
         self.app.show_graph()

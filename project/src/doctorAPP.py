@@ -180,8 +180,8 @@ class DoctorApp:
         self.baseline_scale = tk.Scale(self.scale_frame, from_=0.01, to=0.1, resolution=0.01, orient=tk.HORIZONTAL, length=300)
         self.baseline_scale.pack(pady=5, anchor=tk.CENTER)
 
-        set_button = tk.Button(self.scale_frame, text="Set Baseline", command=self.set_baseline)
-        set_button.pack(pady=5, anchor=tk.CENTER)
+        self.set_button = tk.Button(self.scale_frame, text="Set Baseline", command=self.set_baseline)
+        self.set_button.pack(pady=5, anchor=tk.CENTER)
 
     def show_bolus_scale(self):
         self.clear_scale_frame()
@@ -190,9 +190,9 @@ class DoctorApp:
         self.bolus_scale = tk.Scale(self.scale_frame, from_=0.2, to=0.5, resolution=0.01, orient=tk.HORIZONTAL, length=300)
         self.bolus_scale.pack(pady=5, anchor=tk.CENTER)
 
-        set_button = tk.Button(self.scale_frame, text="Set Bolus", command=self.set_bolus)
+        self.set_button = tk.Button(self.scale_frame, text="Set Bolus", command=self.set_bolus)
 
-        set_button.pack(pady=5, anchor=tk.CENTER)
+        self.set_button.pack(pady=5, anchor=tk.CENTER)
 
     def show_simulate_speed_scale(self):
         self.clear_scale_frame()
@@ -201,8 +201,8 @@ class DoctorApp:
         self.speed_scale = tk.Scale(self.scale_frame, from_=1, to=5, resolution=1, orient=tk.HORIZONTAL, length=300)
         self.speed_scale.pack(pady=5, anchor=tk.CENTER)
 
-        set_button = tk.Button(self.scale_frame, text="Set Speed", command=self.set_simulate_speed)
-        set_button.pack(pady=5, anchor=tk.CENTER)
+        self.set_button = tk.Button(self.scale_frame, text="Set Speed", command=self.set_simulate_speed)
+        self.set_button.pack(pady=5, anchor=tk.CENTER)
 
     def set_baseline(self):
         baseline = self.baseline_scale.get()
@@ -250,10 +250,10 @@ class DoctorApp:
         if self.showing_graph == 'on':
             self.showing_graph = 'pause'  # Stop updating the graph when paused
 
-        pause_label = tk.Label(self.scale_frame, text="Simulation is paused. Press the \"Resume\" button to restart the system.", wraplength=400, justify=tk.LEFT)
-        pause_label.place(relx=0.5, rely=0.15, anchor=tk.CENTER)
-        resume_button = tk.Button(self.scale_frame, text="Resume", command=self.resume)
-        resume_button.place(relx=0.5, rely=0.5, anchor=tk.CENTER) 
+        self.pause_label = tk.Label(self.scale_frame, text="Simulation is paused. Press the \"Resume\" button to restart the system.", wraplength=400, justify=tk.LEFT)
+        self.pause_label.place(relx=0.5, rely=0.15, anchor=tk.CENTER)
+        self.resume_button = tk.Button(self.scale_frame, text="Resume", command=self.resume)
+        self.resume_button.place(relx=0.5, rely=0.5, anchor=tk.CENTER) 
         # Use a different message method to not clear the resume button
 
     def resume(self):
