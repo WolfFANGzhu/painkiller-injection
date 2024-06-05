@@ -27,6 +27,16 @@ class Core:
         self.line1 = None
         self.line2 = None
 
+    def status(self):
+        return {
+            'Time': self.__time,
+            'Baseline Rate': self.__baseline,
+            'Bolus Amount': self.__bolus,
+            'Hourly Amount': self.__hourAmount,
+            'Daily Amount': self.__dailyAmount,
+            'Baseline Status': self.__baselineStatus,
+        }
+    
     def set_baseline(self, baseline: float) -> str:
         baseline = Decimal(str(baseline))
         if baseline < Decimal('0.01') or baseline > Decimal('0.1'):
@@ -60,7 +70,10 @@ class Core:
         # If minuteRecord exceeds 1440, remove the oldest record
         if len(self.__minuteRecord) >= 1440:
             self.__minuteRecord.pop(0)
-        
+            self.__hourlyRecord.pop(0)
+            self.__dailyRecord.pop(0)
+            self.__timeRecord.pop(0)
+
         if self.__baselineStatus == 'on':
             if self.validate(self.__baseline):
                 self.__minuteRecord.append(Decimal(str(self.__baseline)))
@@ -71,32 +84,26 @@ class Core:
         else:
             self.__minuteRecord.append(Decimal('0.0'))
 
-        if len(self.__hourlyRecord) >= 1440:
-            self.__hourlyRecord.pop(0)
-            self.__dailyRecord.pop(0)
-            self.__timeRecord.pop(0)
         # Calculate the hourly and daily amounts
         self.__time += 1
         self.__hourAmount = sum(self.__minuteRecord[-60:])
         self.__dailyAmount = sum(self.__minuteRecord)
 
-
         self.__hourlyRecord.append(self.__hourAmount)
         self.__dailyRecord.append(self.__dailyAmount)
         self.__timeRecord.append(self.__time)
         
-
     def request_bolus(self) -> bool:
         if self.validate(self.__bolus):
             if len(self.__minuteRecord) == 0:
-                self.__minuteRecord.append(self.__bolus)
+                return False
             else:
                 self.__minuteRecord[-1] += self.__bolus
-            # Recalculate hour and daily amounts after bolus request
-            self.__hourAmount = sum(self.__minuteRecord[-60:])
-            self.__dailyAmount = sum(self.__minuteRecord)
-            self.__hourlyRecord[-1] = self.__hourAmount
-            self.__dailyRecord[-1] = self.__dailyAmount
+                # Recalculate hour and daily amounts after bolus request
+                self.__hourAmount = sum(self.__minuteRecord[-60:])
+                self.__dailyAmount = sum(self.__minuteRecord)
+                self.__hourlyRecord[-1] = self.__hourAmount
+                self.__dailyRecord[-1] = self.__dailyAmount
             return True
         return False
 
@@ -112,15 +119,6 @@ class Core:
         self.__timeRecord = []
         self.__time = 0
 
-    def status(self):
-        return {
-            'Time': self.__time,
-            'Baseline Rate': self.__baseline,
-            'Bolus Amount': self.__bolus,
-            'Hourly Amount': self.__hourAmount,
-            'Daily Amount': self.__dailyAmount,
-            'Baseline Status': self.__baselineStatus,
-        }
     def initialize_axes(self, fig):
 
         ax1 = fig.add_subplot(111)
@@ -173,7 +171,6 @@ class Core:
         ax2.yaxis.set_label_position("right")
         self.figure.canvas.draw_idle()  # Update the figure
 
-    
 if __name__ == "__main__":
     core = Core()
     print(core.set_baseline(0.05))
@@ -181,7 +178,9 @@ if __name__ == "__main__":
     print(core.status())
     core.baseline_on()
     core.update_by_minute()
+    print("1",core.status())
     core.update_by_minute()
+    print("2",core.status())
     core.update_by_minute()
     core.update_by_minute()
     core.update_by_minute()

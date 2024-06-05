@@ -5,7 +5,6 @@ from .core import Core
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
 class DoctorApp:
     def __init__(self, root, core):
         self.core = core
@@ -152,7 +151,6 @@ class DoctorApp:
         self.graph_button.config(state=tk.DISABLED)
         self.update_graphs()
 
-
     def update_graphs(self):
         if self.showing_graph=='on':
             fig = self.core.figure
@@ -241,6 +239,7 @@ class DoctorApp:
         self.stop_graph_button.config(state=tk.DISABLED)
         self.core.reset()
         self.clear_dynamic_frame()
+        self.display_realtime_info()
         self.clear_scale_frame()
         self.show_message("System reset.")
 
