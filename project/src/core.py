@@ -75,6 +75,7 @@ class Core:
             self.__timeRecord.pop(0)
 
         if self.__baselineStatus == 'on':
+            self.__hourAmount = sum(self.__minuteRecord[-59:])
             if self.validate(self.__baseline):
                 self.__minuteRecord.append(Decimal(str(self.__baseline)))
 

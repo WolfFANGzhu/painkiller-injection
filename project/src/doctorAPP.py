@@ -233,6 +233,7 @@ class DoctorApp:
     def reset(self):
         self.start = False
         self.start_button.config(state=tk.NORMAL)
+        self.simulate_speed = 1000
         if self.showing_graph == 'on':
             self.stop_graph()
         self.showing_graph = 'off'

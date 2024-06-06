@@ -123,7 +123,8 @@ class TestDoctorApp_function(unittest.TestCase):
         self.assertFalse(self.app.paused)
         self.assertTrue(self.app.showing_graph == 'off')
         self.assertEqual(status['Time'], 0)
-        self.assertTrue(self.app.start_button['state'] == tk.NORMAL)      
+        self.assertTrue(self.app.start_button['state'] == tk.NORMAL)    
+        self.assertEqual(self.app.simulate_speed, int(1000))
 
     @patch.object(DoctorApp, 'show_message')
     def test_reset_on(self, mock_show_message):  # show graph on
@@ -141,6 +142,7 @@ class TestDoctorApp_function(unittest.TestCase):
         self.assertEqual(status['Time'], 0)
         self.assertTrue(self.app.start_button['state'] == tk.NORMAL) 
         mock_show_message.assert_called_with("System reset.")
+        self.assertEqual(self.app.simulate_speed, int(1000))
 
     @patch.object(DoctorApp, 'show_message')
     def test_set_simulate_speed(self, mock_show_message):

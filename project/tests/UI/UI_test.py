@@ -210,7 +210,7 @@ class TestDoctorApp_UI(unittest.TestCase):
         self.assertTrue(self.app.stop_graph_button['state'] == tk.DISABLED)    
         self.assertTrue(self.app.start_button['state'] == tk.DISABLED)   
 
-    def test_combine_1(self): # simulate the all day condition 1 start can go truely
+    def test_combine_1(self): # simulate the all day condition 1 start can go truely: start + baseline off
         
         self.button_click(self.app.start_button)
         for _ in range(599):
@@ -224,7 +224,7 @@ class TestDoctorApp_UI(unittest.TestCase):
         self.assertEqual(status['Daily Amount'], Decimal('0.0'))
         self.assertEqual(status['Baseline Status'], 'off')
 
-    def test_combine_2(self): # simulate the all day condition 2 start can go correctly with set baseline
+    def test_combine_2(self): # simulate the all day condition 2 start can go correctly with set baseline: start + set baseline + baseline on
         
         self.button_click(self.app.set_baseline_button)
         self.app.baseline_scale.set(0.05)
@@ -239,10 +239,10 @@ class TestDoctorApp_UI(unittest.TestCase):
         self.assertEqual(status['Baseline Rate'], Decimal('0.05'))
         self.assertEqual(status['Bolus Amount'], Decimal('0.2'))
         self.assertEqual(status['Hourly Amount'], Decimal('1.0'))
-        self.assertEqual(status['Daily Amount'], Decimal('1.0'))
+        self.assertEqual(status['Daily Amount'], Decimal('1.5'))
         self.assertEqual(status['Baseline Status'], 'on')
 
-    def test_combine_3(self): # simulate the all day condition 2 start can go correctly with set bolus
+    def test_combine_3(self): # simulate the all day condition 2 start can go correctly with set bolus: start + set bolus + baseline off
         
         self.button_click(self.app.set_bolus_button)
         self.app.bolus_scale.set(0.35)
@@ -259,7 +259,8 @@ class TestDoctorApp_UI(unittest.TestCase):
         self.assertEqual(status['Daily Amount'], Decimal('0.0'))
         self.assertEqual(status['Baseline Status'], 'off')
 
-    def test_combine_4(self): # simulate the all day condition 2 start can go correctly with set bolus + baseline
+    @patch.object(DoctorApp, 'show_message')
+    def test_combine_4(self, mock_show_message): # simulate the all day condition 2 start can go correctly with set bolus + baseline: start + set bolus + set baseline + baseline on + request bolus + set simulate speed + pasuse + resume + reset + show graph + stop graph + set baseline off
         
         self.button_click(self.app.set_baseline_button)
         self.app.baseline_scale.set(0.05)
@@ -267,16 +268,28 @@ class TestDoctorApp_UI(unittest.TestCase):
         self.button_click(self.app.set_bolus_button)
         self.app.bolus_scale.set(0.30)
         self.button_click(self.app.set_button)
-        self.button_click(self.app.start_button)
         self.button_click(self.app.baseline_on_button)
-        for i in range(59):
+        self.button_click(self.app.graph_button)
+        self.assertEqual(self.app.showing_graph, 'on')
+        self.assertTrue(self.app.stop_graph_button['state'] == tk.NORMAL)    
+        self.assertTrue(self.app.graph_button['state'] == tk.DISABLED)    
+        status = self.core.status()
+        # print(status['Time'])
+        self.button_click(self.app.start_button)
+        for i in range(1, 60):
             self.core.update_by_minute()
             status = self.core.status()
-            print(status['Time'])
-            if i == 4:
+            # print(status['Time'])
+            if i == 4: # 5 min
                 self.button_click(self.patient.request_bolus_button)
-            if i == 5:
-                self.assertEqual(status['Time'], Decimal('7'))
+                self.assertEqual(status['Time'], Decimal('5'))
+                self.assertEqual(status['Baseline Rate'], Decimal('0.05'))
+                self.assertEqual(status['Bolus Amount'], Decimal('0.30'))
+                self.assertEqual(status['Hourly Amount'], Decimal('0.25'))
+                self.assertEqual(status['Daily Amount'], Decimal('0.25'))
+                self.assertEqual(status['Baseline Status'], 'on')
+            if i == 5: # 6 min
+                self.assertEqual(status['Time'], Decimal('6'))
                 self.assertEqual(status['Baseline Rate'], Decimal('0.05'))
                 self.assertEqual(status['Bolus Amount'], Decimal('0.30'))
                 self.assertEqual(status['Hourly Amount'], Decimal('0.60'))
@@ -290,6 +303,92 @@ class TestDoctorApp_UI(unittest.TestCase):
         self.assertEqual(status['Hourly Amount'], Decimal('1.00'))
         self.assertEqual(status['Daily Amount'], Decimal('1.00'))
         self.assertEqual(status['Baseline Status'], 'on')
+        
+        self.button_click(self.app.set_simulate_speed_button)
+        self.app.speed_scale.set(2)
+        self.button_click(self.app.set_button)
+        self.assertEqual(self.app.simulate_speed, int(1000/2)) 
+        self.button_click(self.app.pause_button)
+        expected_text = "Simulation is paused. Press the \"Resume\" button to restart the system."
+        self.assertEqual(self.app.pause_label.cget("text"), expected_text)
+        self.assertEqual(self.app.showing_graph, 'pause')
+        self.button_click(self.app.resume_button)
+        self.assertFalse(self.app.paused)
+        mock_show_message.assert_called_with("Simulation resumed.")
+        self.assertTrue(self.app.showing_graph == 'on')
+        self.assertTrue(self.app.graph_button['state'] == tk.DISABLED)    
+        self.button_click(self.app.stop_graph_button)
+        mock_show_message.assert_called_with("Graph stopped.")
+        self.assertEqual(self.app.showing_graph, 'off')
+        self.assertTrue(self.app.stop_graph_button['state'] == tk.DISABLED)    
+        self.assertTrue(self.app.graph_button['state'] == tk.NORMAL)       
 
+        for i in range(1, 61): # 60 start
+            self.core.update_by_minute()
+            status = self.core.status()
+            # print(status['Time'])
+            if i == 5: # 66
+                self.assertEqual(status['Time'], Decimal('66'))
+                self.assertEqual(status['Baseline Rate'], Decimal('0.05'))
+                self.assertEqual(status['Bolus Amount'], Decimal('0.30'))
+                self.assertEqual(status['Hourly Amount'], Decimal('0.70'))
+                self.assertEqual(status['Daily Amount'], Decimal('1.3'))
+                self.assertEqual(status['Baseline Status'], 'on')
+            if i == 15: # 76
+                self.assertEqual(status['Time'], Decimal('76'))
+                self.assertEqual(status['Baseline Rate'], Decimal('0.05'))
+                self.assertEqual(status['Bolus Amount'], Decimal('0.30'))
+                self.assertEqual(status['Hourly Amount'], Decimal('0.80'))
+                self.assertEqual(status['Daily Amount'], Decimal('1.80'))
+                self.assertEqual(status['Baseline Status'], 'on')
+
+        for i in range(1, 60): # 120 start
+            self.core.update_by_minute()
+            status = self.core.status()
+            # print(status['Time'])
+            if i == 5: # 126
+                self.button_click(self.app.baseline_off_button)
+                status = self.core.status()
+                self.assertEqual(status['Time'], Decimal('126'))
+                self.assertEqual(status['Baseline Rate'], Decimal('0.05'))
+                self.assertEqual(status['Bolus Amount'], Decimal('0.30'))
+                self.assertEqual(status['Hourly Amount'], Decimal('1.00'))
+                self.assertEqual(status['Daily Amount'], Decimal('2.30'))
+                self.assertEqual(status['Baseline Status'], 'off')
+            if i == 6: # 127
+                self.assertEqual(status['Time'], Decimal('127'))
+                self.assertEqual(status['Baseline Rate'], Decimal('0.05'))
+                self.assertEqual(status['Bolus Amount'], Decimal('0.30'))
+                self.assertEqual(status['Hourly Amount'], Decimal('0.95'))
+                self.assertEqual(status['Daily Amount'], Decimal('2.30'))
+                self.assertEqual(status['Baseline Status'], 'off')
+
+        self.button_click(self.app.reset_button)
+        mock_show_message.assert_called_with("System reset.")
+        status = self.core.status()
+        # print(status)
+        self.assertEqual(status['Time'], Decimal('0'))
+        self.assertEqual(status['Baseline Rate'], Decimal('0.01'))
+        self.assertEqual(status['Bolus Amount'], Decimal('0.2'))
+        self.assertEqual(status['Hourly Amount'], Decimal('0.0'))
+        self.assertEqual(status['Daily Amount'], Decimal('0.0'))
+        self.assertEqual(status['Baseline Status'], 'off')
+        self.assertFalse(self.app.start)
+        self.assertFalse(self.app.paused)
+        self.assertTrue(self.app.showing_graph == 'off')
+        self.assertTrue(self.app.start_button['state'] == tk.NORMAL) 
+        
+    def test_combine_5(self): # set_simulate_speed + start + reset + start 
+        self.button_click(self.app.set_simulate_speed_button)
+        self.app.speed_scale.set(3)
+        self.button_click(self.app.set_button)
+        self.assertEqual(self.app.simulate_speed, int(1000/3)) 
+        self.button_click(self.app.start_button)
+        self.button_click(self.app.reset_button)
+        self.button_click(self.app.start_button)
+        self.assertEqual(self.app.simulate_speed, int(1000)) 
+
+    # def test_combine_6(self):
+    #     pass
 if __name__ == "__main__":
     unittest.main()
