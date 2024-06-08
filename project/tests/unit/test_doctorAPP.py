@@ -19,6 +19,7 @@ class TestDoctorApp_function(unittest.TestCase):
         self.root.withdraw()
         self.core = Core()
         self.app = DoctorApp(self.root, self.core)
+        # self.root.mainloop()
 
     # every test finish, run tearDown
     def tearDown(self):
