@@ -1,6 +1,6 @@
 import unittest
 from decimal import Decimal
-from core import Core
+from project.src.core import Core
 
 class TestCore(unittest.TestCase):
     def setUp(self):

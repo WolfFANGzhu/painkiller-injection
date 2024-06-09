@@ -1,17 +1,14 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import tkinter as tk
-import sys
-import os
 from matplotlib.figure import Figure
 from decimal import Decimal
 import time
 import matplotlib.pyplot as plt
-# find correct path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from src.core import Core
-from src.doctorAPP import DoctorApp
-from src.patientAPP import PatientApp
+
+from project.src.core import Core
+from project.src.doctorAPP import DoctorApp
+from project.src.patientAPP import PatientApp
 
 class TestDoctorApp_UI(unittest.TestCase):
 

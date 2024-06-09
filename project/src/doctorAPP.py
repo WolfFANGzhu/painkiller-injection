@@ -236,7 +236,7 @@ class DoctorApp:
         self.paused = False
         self.resume_button = None
         self.pause_label = None
-        self.showing_graph = 'off'  # Graph is not being shown
+
         self.start_button.config(state=tk.NORMAL)
         self.simulate_speed = 1000
         if self.showing_graph == 'on':
