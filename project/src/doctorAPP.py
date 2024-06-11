@@ -4,8 +4,7 @@ from tkinter import messagebox
 from .core import Core
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-
+import time
 class DoctorApp:
     def __init__(self, root, core):
         self.core = core
@@ -90,7 +89,8 @@ class DoctorApp:
         self.graph_frame = tk.Frame(self.right_frame, bd=2, relief="groove", width=1200, height=650)
         self.graph_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False, padx=10, pady=10)
         self.graph_frame.pack_propagate(0)
-
+        self.resume_button = None
+        self.pause_label = None
         self.showing_graph = 'off'  # Graph is not being shown
         self.paused = False
         self.start = False
@@ -152,9 +152,8 @@ class DoctorApp:
         self.graph_button.config(state=tk.DISABLED)
         self.update_graphs()
 
-
     def update_graphs(self):
-        if self.showing_graph=='on':
+        if self.showing_graph == 'on':
             fig = self.core.figure
             self.update_graph(fig, self.graph_frame)
             if self.start:
@@ -182,8 +181,8 @@ class DoctorApp:
         self.baseline_scale = tk.Scale(self.scale_frame, from_=0.01, to=0.1, resolution=0.01, orient=tk.HORIZONTAL, length=300)
         self.baseline_scale.pack(pady=5, anchor=tk.CENTER)
 
-        set_button = tk.Button(self.scale_frame, text="Set Baseline", command=self.set_baseline)
-        set_button.pack(pady=5, anchor=tk.CENTER)
+        self.set_button = tk.Button(self.scale_frame, text="Set Baseline", command=self.set_baseline)
+        self.set_button.pack(pady=5, anchor=tk.CENTER)
 
     def show_bolus_scale(self):
         self.clear_scale_frame()
@@ -192,9 +191,9 @@ class DoctorApp:
         self.bolus_scale = tk.Scale(self.scale_frame, from_=0.2, to=0.5, resolution=0.01, orient=tk.HORIZONTAL, length=300)
         self.bolus_scale.pack(pady=5, anchor=tk.CENTER)
 
-        set_button = tk.Button(self.scale_frame, text="Set Bolus", command=self.set_bolus)
+        self.set_button = tk.Button(self.scale_frame, text="Set Bolus", command=self.set_bolus)
 
-        set_button.pack(pady=5, anchor=tk.CENTER)
+        self.set_button.pack(pady=5, anchor=tk.CENTER)
 
     def show_simulate_speed_scale(self):
         self.clear_scale_frame()
@@ -203,8 +202,8 @@ class DoctorApp:
         self.speed_scale = tk.Scale(self.scale_frame, from_=1, to=5, resolution=1, orient=tk.HORIZONTAL, length=300)
         self.speed_scale.pack(pady=5, anchor=tk.CENTER)
 
-        set_button = tk.Button(self.scale_frame, text="Set Speed", command=self.set_simulate_speed)
-        set_button.pack(pady=5, anchor=tk.CENTER)
+        self.set_button = tk.Button(self.scale_frame, text="Set Speed", command=self.set_simulate_speed)
+        self.set_button.pack(pady=5, anchor=tk.CENTER)
 
     def set_baseline(self):
         baseline = self.baseline_scale.get()
@@ -234,32 +233,39 @@ class DoctorApp:
 
     def reset(self):
         self.start = False
+        self.paused = False
+        self.resume_button = None
+        self.pause_label = None
+
         self.start_button.config(state=tk.NORMAL)
+        self.simulate_speed = 1000
         if self.showing_graph == 'on':
             self.stop_graph()
         self.showing_graph = 'off'
+        self.graph_button.config(state=tk.NORMAL)
         self.stop_graph_button.config(state=tk.DISABLED)
         self.core.reset()
         self.clear_dynamic_frame()
         self.clear_scale_frame()
+        self.display_realtime_info()
         self.show_message("System reset.")
 
     def pause(self):
         self.paused = True
         self.disable_buttons()
-        self.clear_scale_frame()
         if self.showing_graph == 'on':
             self.showing_graph = 'pause'  # Stop updating the graph when paused
-
-        pause_label = tk.Label(self.scale_frame, text="Simulation is paused. Press the \"Resume\" button to restart the system.", wraplength=400, justify=tk.LEFT)
-        pause_label.place(relx=0.5, rely=0.15, anchor=tk.CENTER)
-        resume_button = tk.Button(self.scale_frame, text="Resume", command=self.resume)
-        resume_button.place(relx=0.5, rely=0.5, anchor=tk.CENTER) 
+        self.clear_scale_frame()
+        self.pause_label = tk.Label(self.scale_frame, text="Simulation is paused. Press the \"Resume\" button to restart the system.", wraplength=400, justify=tk.LEFT)
+        self.pause_label.place(relx=0.5, rely=0.15, anchor=tk.CENTER)
+        self.resume_button = tk.Button(self.scale_frame, text="Resume", command=self.resume)
+        self.resume_button.place(relx=0.5, rely=0.5, anchor=tk.CENTER) 
         # Use a different message method to not clear the resume button
 
     def resume(self):
         self.paused = False
         self.enable_buttons()
+        self.clear_scale_frame()
         self.show_message("Simulation resumed.")
         self.display_realtime_info()
         if self.showing_graph == 'pause':
@@ -305,11 +311,17 @@ class DoctorApp:
 
     def clear_dynamic_frame(self):
         for widget in self.dynamic_frame.winfo_children():
-            widget.destroy()
+            widget.pack_forget()
 
     def clear_scale_frame(self):
-        for widget in self.scale_frame.winfo_children():
-            widget.destroy()
+        if self.scale_frame.winfo_children():
+            for widget in self.scale_frame.winfo_children():
+                if (self.pause_label and widget == self.pause_label )or (self.resume_button and widget == self.resume_button):
+                    widget.place_forget()
+                else:
+                    widget.pack_forget()
+        if hasattr(self, 'message_frame'):
+            self.message_frame.destroy()
 
     def show_message(self, message):
         self.clear_scale_frame()

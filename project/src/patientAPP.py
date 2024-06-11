@@ -9,7 +9,6 @@ class PatientApp:
         self.root.title("Patient Interface")
         self.root.geometry('200x100+1600+300')
         
-        
         # Create title bar for dragging 
         self.title_bar = tk.Frame(root, bg="lightgrey", relief="raised", bd=2, height=40)
         self.title_bar.pack(fill=tk.X)
@@ -21,8 +20,7 @@ class PatientApp:
         self.request_bolus_button.pack(pady=5)
 
     def request_bolus(self):
-        self.core.request_bolus()
-
+        return self.core.request_bolus()
 
     def make_window_draggable(self, widget):
         self.offset_x = 0
