@@ -1,4 +1,8 @@
-# Requiement Doc
+# Painkiller Injection System Requiement 
+## Introduction
+The Painkiller Injection System is a software project designed to address the need for efficient and accurate pain management through automated injection delivery. Chronic pain management often requires precise dosing and timing of medication, which can be challenging to achieve manually. This system aims to automate the process, providing healthcare professionals with a tool to administer painkillers with greater precision and convenience.
+
+
 ## Basic Requirement
 - Limit:
   - total amount per day: 3mL
@@ -8,20 +12,14 @@
   - Bolus: 0.2-0.5 mL/shot
 - Interface
   - Physician
-    - patient management
-      - create/select/delete patient account
-      - choose different painkiller for one patient 
-    - Injection management
-      - set injection time/mode/dose
+      - set injection baseline rate and bolus amount
   - Patient
-    - log in
-    - start button
-    - interrupt button
+    - button to request bolus
 
 ## Domain Analysis
-The participants are one patient, one doctor and a painkiller injection system.
+The participants are one patient, one doctor and a painkiller injection system. The doctor can set injection parameters on the system, the system can inject painkiller to patient automatically. The patient can request a bolus when severe pain attacks.
 
-## System Architechure
+## Class Diagram
 ![](ClassDiagram.png)
 ## Use case
 ![](UseCaseDiagram.png)
@@ -47,5 +45,9 @@ The participants are one patient, one doctor and a painkiller injection system.
   - R3.2.2 System should be able to inject bolus immediately once patient pressed button and that amount is validated.(valid if injecting bolus will not cause total amount to exceed hour limit and day limit)
   - R3.2.3 System should be able to stop baseline injection automatically if injecting baseline will cause current amount to exceed daily amount or hour amount.
   - R3.2.4 System should restart baseline injection automatically when injecting baseline will not cause current amount to exceed daily amount or hour amount.
+### R4 Additional Feature
+- R4.1 Dynamic amount visualisation
+  - R4.1.1 On doctor ui, a dynamic line chart should be displayed to demonstrate injected amount trend within an hour.
+  - R4.1.1 On doctor ui, a dynamic line chart should be displayed to demonstrate injected amount trend within a day
 
 
