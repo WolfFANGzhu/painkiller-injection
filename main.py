@@ -1,7 +1,7 @@
 import tkinter as tk
-from project.src.core import Core
-from project.src.doctorAPP import DoctorApp
-from project.src.patientAPP import PatientApp
+from src.core import Core
+from src.doctorAPP import DoctorApp
+from src.patientAPP import PatientApp
 
 def main():
     core = Core()

@@ -7,7 +7,7 @@ class PatientApp:
         self.core = core
         self.root = root
         self.root.title("Patient Interface")
-        self.root.geometry('200x100+1600+300')
+        self.root.geometry('200x100+160+300')
         
         # Create title bar for dragging 
         self.title_bar = tk.Frame(root, bg="lightgrey", relief="raised", bd=2, height=40)

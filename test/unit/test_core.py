@@ -1,11 +1,24 @@
 import unittest
 from decimal import Decimal
-from project.src.core import Core
+from src.core import Core
 
 class TestCore(unittest.TestCase):
     def setUp(self):
         self.core = Core()
 
+    def test_initialize(self):
+        status = self.core.status()
+        self.assertEqual(status['Baseline Rate'], Decimal('0.01'))
+        self.assertEqual(status['Bolus Amount'], Decimal('0.2'))
+        self.assertEqual(status['Hourly Amount'], Decimal('0.0'))
+        self.assertEqual(status['Daily Amount'], Decimal('0.0'))
+        self.assertEqual(status['Baseline Status'], 'off')
+        self.assertEqual(status['Time'], 0)
+        self.assertEqual(len(self.core._Core__timeRecord), 0)
+        self.assertEqual(len(self.core._Core__minuteRecord), 0)
+        self.assertEqual(len(self.core._Core__hourlyRecord), 0)
+        self.assertEqual(len(self.core._Core__dailyRecord), 0)
+        
     def test_set_baseline_success(self): # 0.01 - 0.1 + correct set status
         response = self.core.set_baseline(0.05)
         self.assertEqual(response, "Success set baseline to 0.05 ml.")
@@ -43,6 +56,21 @@ class TestCore(unittest.TestCase):
     def test_baseline_off(self): # correct set status
         self.core.baseline_off()
         self.assertEqual(self.core.status()['Baseline Status'], 'off')
+
+    def test_validate_false_1(self):
+        response = self.core.validate(Decimal('1.1'))
+        self.assertFalse(response)  # False
+
+    def test_validate_false_2(self):
+        self.core._Core__hourAmount = 0.0
+        self.core._Core__dailyAmount = 3.0
+        response = self.core.validate(Decimal('0.1'))
+
+        self.assertFalse(response)  # False
+
+    def test_validate_success(self):
+        response = self.core.validate(Decimal('0.1'))
+        self.assertTrue(response)  # False
 
     def test_validate_hour_limit(self): # hour <= 1.0 || > 1.0
         self.core.baseline_on()
@@ -136,6 +164,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(self.core._Core__hourlyRecord[-1], status['Hourly Amount'])
         self.assertEqual(self.core._Core__dailyRecord[-1], status['Hourly Amount'])
 
+    
     def test_request_bolus_validate_success_init(self): # validate true + len == 0
         self.core.set_bolus(0.5)
         self.assertFalse(self.core.request_bolus())

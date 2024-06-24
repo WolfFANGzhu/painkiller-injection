@@ -5,8 +5,8 @@ from matplotlib.figure import Figure
 from decimal import Decimal
 
 
-from project.src.core import Core
-from project.src.doctorAPP import DoctorApp
+from src.core import Core
+from src.doctorAPP import DoctorApp
 
 class TestDoctorApp_function(unittest.TestCase):
     # every test start, run setUp

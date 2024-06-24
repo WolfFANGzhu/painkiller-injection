@@ -1,11 +1,11 @@
 # WeeklyReport 1
 
 ## Use Case Diagram
-<img src="../Requirement/UseCaseDiagram.png" width="500" height="300">
 
+![photo](../Others/UseCaseDiagram.png)
 
 ## Basic Requirement
-Finish basic requirement at [Requirement Doc](../Requirement/Requirement.md)
+Finish basic requirement.
 
 ## Goal For Next Week
 - Finish drawing class diagram.

@@ -6,9 +6,9 @@ from decimal import Decimal
 import time
 import matplotlib.pyplot as plt
 
-from project.src.core import Core
-from project.src.doctorAPP import DoctorApp
-from project.src.patientAPP import PatientApp
+from src.core import Core
+from src.doctorAPP import DoctorApp
+from src.patientAPP import PatientApp
 
 class TestDoctorApp_UI(unittest.TestCase):
 

@@ -28,13 +28,13 @@ To run unit tests, use the following command:
 
 ```bash
 # e.g for the `core` module
-python -m unittest project.tests.unit.test_core
+python -m unittest tests.unit.test_core
 ```
 
 To run all unit tests, execute:
 
 ```bash
-python -m unittest discover -s project/tests/unit
+python -m unittest discover -s .\test\unit\
 ```
 
 ### Running Functional Tests
@@ -42,14 +42,15 @@ python -m unittest discover -s project/tests/unit
 To run functional tests, execute:
 
 ```bash
-# e.g for the `doctorAPP` module
-python -m unittest project.tests.functional.test_doctorAPP_functional
+python -m unittest test.UI.UI_test
 ```
 
-To run all unit tests, execute:
+### Running Integral Tests
+
+To run integral tests, execute:
 
 ```bash
-python -m unittest discover -s project/tests/functional
+python -m unittest test.Integral.integral_test
 ```
 
 ### Running Specific Modules
@@ -57,6 +58,6 @@ python -m unittest discover -s project/tests/functional
 To run a specific module, such as `doctorAPP`, use the following command:
 
 ```bash
-python -m project.src.doctorAPP
+python -m src.doctorAPP
 ```
 
